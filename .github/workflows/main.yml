@@ -14,22 +14,27 @@ jobs:
 
       - name: Install ImageMagick
         run: sudo apt-get install -y imagemagick
-
+      
       - name: Generate Countdown Image
         run: |
-          TARGET_DATE="2025-01-26"  # ←ここだけ変えてください
-          
+          TARGET_DATE="2025-03-10"  # ←ここだけ変える
           TODAY=$(date +%s)
           TARGET=$(date -d "$TARGET_DATE" +%s)
           DIFF=$(( (TARGET - TODAY) / 86400 ))
 
-          # 赤文字・数字のみ・大きめの画像
-          convert -size 1600x400 \
-            -background white \
-            -gravity center \
-            -fill red \
-            -pointsize 200 \
-            label:"$DIFF" countdown.png
+          # カンバス作成（透明背景）
+          convert -size 300x300 xc:none \
+            \
+            \( -size 240x240 xc:#03A9F4 -fill white -draw "circle 150,150 150,20" \) \
+            -geometry +30+30 -composite \
+            \
+            -fill white -pointsize 120 -gravity center -annotate 0 "$DIFF" \
+            \
+            -fill "#333333" -pointsize 40 -gravity northwest -annotate +10+10 "あと" \
+            \
+            -fill "#333333" -pointsize 40 -gravity southeast -annotate +10+10 "日" \
+            countdown.png
+
 
       - name: Upload
         uses: peaceiris/actions-gh-pages@v3
