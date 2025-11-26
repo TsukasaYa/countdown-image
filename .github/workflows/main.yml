@@ -2,36 +2,52 @@ name: Update Countdown Image
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *'    # 毎日0時（UTC）= 日本時間 朝9時に実行
   workflow_dispatch:
+
+# GitHub Actions から gh-pages に push できるようにする
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Install ImageMagick
         run: sudo apt-get install -y imagemagick
-      
+
       - name: Generate Countdown Image
         run: |
-          TARGET_DATE="2026-01-26"  # ←ここだけ変える
-          TODAY=$(date +%s)
-          TARGET=$(date -d "$TARGET_DATE" +%s)
-          DIFF=$(( (TARGET - TODAY) / 86400 ))
+          # ===== カウントダウンの目標日 =====
+          TARGET_DATE="2026-01-26"
 
-          # 正しい円の描画（中心=150,150 半径=120）
+          # ===== JST（日本時間）で現在時刻と目標日の 0:00 の秒数を取得 =====
+          TODAY=$(TZ="Asia/Tokyo" date +%s)
+          TARGET=$(TZ="Asia/Tokyo" date -d "$TARGET_DATE" +%s)
+
+          # ===== 日数差を「切り上げ」で計算 =====
+          #   例: 残り 61.2 日 → 62 日
+          #   Bash には ceil がないので (差 + 86399) / 86400 の整数除算で代用
+          DIFF=$(( ( (TARGET - TODAY) + 86399 ) / 86400 ))
+
+          echo "TARGET   = $TARGET_DATE"
+          echo "TODAY(s) = $TODAY"
+          echo "TARGET(s)= $TARGET"
+          echo "DIFF     = $DIFF days remaining (ceil)"
+
+          # ===== バッジ画像生成（300x300 正方形） =====
           convert -size 300x300 xc:none \
+            \
             -fill "#03A9F4" -draw "circle 150,150 150,30" \
             \
-            -fill white -pointsize 130 -gravity center -annotate 0 "$DIFF" \
+            -font DejaVu-Sans -fill white -pointsize 130 \
+            -gravity center -annotate 0 "$DIFF" \
             \
-            -fill "#333333" -pointsize 40 -gravity northwest -annotate +10+10 "あと" \
-            -fill "#333333" -pointsize 40 -gravity southeast -annotate +10+10 "日" \
             countdown.png
-
 
       - name: Upload
         uses: peaceiris/actions-gh-pages@v3
