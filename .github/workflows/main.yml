@@ -1,0 +1,39 @@
+name: Update Countdown Image
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install ImageMagick
+        run: sudo apt-get install -y imagemagick
+
+      - name: Generate Countdown Image
+        run: |
+          TARGET_DATE="2025-01-26"  # ←ここだけ変えてください
+          
+          TODAY=$(date +%s)
+          TARGET=$(date -d "$TARGET_DATE" +%s)
+          DIFF=$(( (TARGET - TODAY) / 86400 ))
+
+          # 赤文字・数字のみ・大きめの画像
+          convert -size 1600x400 \
+            -background white \
+            -gravity center \
+            -fill red \
+            -pointsize 200 \
+            label:"$DIFF" countdown.png
+
+      - name: Upload
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./
