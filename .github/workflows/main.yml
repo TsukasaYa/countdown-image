@@ -17,7 +17,7 @@ jobs:
       
       - name: Generate Countdown Image
         run: |
-          TARGET_DATE="2025-12-31"  # ←ここだけ変える
+          TARGET_DATE="2026-01-26"  # ←ここだけ変える
           TODAY=$(date +%s)
           TARGET=$(date -d "$TARGET_DATE" +%s)
           DIFF=$(( (TARGET - TODAY) / 86400 ))
