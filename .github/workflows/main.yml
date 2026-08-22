@@ -1,8 +1,7 @@
 name: Update Countdown Image
 
 on:
-  schedule:
-    - cron: '0 0 * * *'    # 毎日0時（UTC）= 日本時間 朝9時に実行
+
   workflow_dispatch:
 
 # GitHub Actions から gh-pages に push できるようにする
